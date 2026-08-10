@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#284f45">
+  <meta name="description" content="Digitaler Hausguide für das Ferienhaus in Montalivet">
+  <title>Ferienhaus Montalivet</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero__inner">
+      <div>
+        <div class="eyebrow">Digitaler Hausguide</div>
+        <h1 id="house-name">Ferienhaus Montalivet</h1>
+        <p class="hero__copy">Alles Wichtige für euren Aufenthalt – schnell gefunden, ohne im Hausbuch zu blättern.</p>
+      </div>
+      <button class="ghost-btn" id="install-btn" hidden>Zum Startbildschirm</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <section id="today-card" class="today-card" aria-live="polite"></section>
+
+    <section class="stay-card">
+      <div>
+        <div class="eyebrow">Euer Aufenthalt</div>
+        <h2>Wann reist ihr ab?</h2>
+        <p>Das Datum wird nur auf diesem Gerät gespeichert. So kann die Seite die Abreise-Checkliste rechtzeitig hervorheben.</p>
+      </div>
+      <div class="stay-controls">
+        <input id="departure-date" type="date" aria-label="Abreisedatum">
+        <button id="save-departure" class="primary-btn">Speichern</button>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-heading">
+        <div>
+          <div class="eyebrow">Schnellzugriff</div>
+          <h2>Was möchtest du wissen?</h2>
+        </div>
+      </div>
+      <div id="topic-grid" class="topic-grid"></div>
+    </section>
+
+    <section id="departure" class="detail-card departure-card">
+      <div class="detail-card__header">
+        <div>
+          <div class="eyebrow">Vor der Abfahrt</div>
+          <h2>🚪 Abreise-Checkliste</h2>
+        </div>
+        <button id="reset-checklist" class="text-btn">Zurücksetzen</button>
+      </div>
+      <p class="muted">Hake die Punkte direkt auf dem Handy ab. Der Stand bleibt auf diesem Gerät gespeichert.</p>
+      <div id="departure-checklist" class="checklist"></div>
+    </section>
+
+    <section id="question" class="detail-card question-card">
+      <div class="eyebrow">Etwas unklar?</div>
+      <h2>❓ Frage oder Problem</h2>
+      <p>Wenn du die Antwort hier nicht findest, kannst du dem Hauseigentümer direkt eine vorbereitete WhatsApp-Nachricht schicken.</p>
+      <label for="question-area">Bereich</label>
+      <select id="question-area">
+        <option>Allgemein</option>
+        <option>Pool</option>
+        <option>Heizung / Ofen</option>
+        <option>Waschen</option>
+        <option>Müll</option>
+        <option>Haus / Schlüssel</option>
+        <option>Sonstiges</option>
+      </select>
+      <label for="question-text">Nachricht</label>
+      <textarea id="question-text" rows="4" placeholder="Was ist passiert oder was möchtest du wissen?"></textarea>
+      <button id="whatsapp-btn" class="primary-btn">Per WhatsApp fragen</button>
+      <p id="contact-hint" class="small muted"></p>
+    </section>
+
+    <section class="source-note">
+      <details>
+        <summary>📖 Original-Hausbuch ansehen</summary>
+        <p class="muted">Die Inhalte dieser ersten Version wurden aus den bereitgestellten Fotos übernommen. Bei Zweifeln gilt die Originalanweisung.</p>
+        <div id="source-gallery" class="source-gallery"></div>
+      </details>
+    </section>
+  </main>
+
+  <dialog id="topic-dialog">
+    <form method="dialog" class="dialog-card">
+      <div class="dialog-top">
+        <div>
+          <div id="dialog-eyebrow" class="eyebrow"></div>
+          <h2 id="dialog-title"></h2>
+        </div>
+        <button class="close-btn" aria-label="Schließen">×</button>
+      </div>
+      <div id="dialog-body"></div>
+    </form>
+  </dialog>
+
+  <footer>
+    <p>Ferienhaus-Guide · Phase 1 · statische PWA</p>
+  </footer>
+
+  <script src="house-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
