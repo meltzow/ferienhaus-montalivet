@@ -30,9 +30,13 @@ function openTopic(topic) {
   const image = topic.sourceImage
     ? `<details><summary>Originalübersicht anzeigen</summary><img src="${topic.sourceImage}" alt="Originalseite aus dem Hausbuch" style="width:100%;margin-top:10px;border-radius:12px"></details>`
     : "";
+  const source = topic.sourceUrl
+    ? `<p class="small muted"><a href="${topic.sourceUrl}" target="_blank" rel="noopener">${topic.sourceLabel || "Offizielle Quelle öffnen"} ↗</a></p>`
+    : "";
   dialogBody.innerHTML = `
     ${callout}
     <ul class="dialog-list">${topic.items.map(x => `<li>${x}</li>`).join("")}</ul>
+    ${source}
     ${image}
   `;
   dialog.showModal();
@@ -74,15 +78,30 @@ function renderToday() {
   const now = new Date();
   const weekday = now.getDay(); // Sun=0
   const week = getISOWeek(now);
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
   const notes = [];
 
-  // Waste reminders based on the supplied housebook.
-  if (weekday === 2) notes.push("🗑️ Morgen (Mittwoch): Verpackungen/Papier und Bioabfall werden abgeholt.");
-  if (weekday === 3) {
-    notes.push("🗑️ Heute (Mittwoch): Verpackungen/Papier und Bioabfall.");
-    if (week % 2 === 1) notes.push("🗑️ Morgen: Restmüll – ungerade Kalenderwoche.");
+  // Müllplan 2026, offiziell geprüft bei Mairie Vendays-Montalivet / Smicotom.
+  if (year === data.wasteScheduleYear) {
+    const summerMontalivet = month === 7 || month === 8;
+    const residualWasteThisWeek = summerMontalivet || (week % 2 === 1);
+
+    if (weekday === 2) {
+      notes.push("🗑️ Morgen (Mittwoch): gelbe + grüne Tonne. Bitte heute Abend rausstellen.");
+    }
+    if (weekday === 3) {
+      notes.push("🗑️ Heute (Mittwoch): Verpackungen/Papier + Bioabfall.");
+      if (residualWasteThisWeek) {
+        notes.push("🗑️ Morgen (Donnerstag): Restmüll. Bitte heute Abend die schwarze Tonne rausstellen.");
+      }
+    }
+    if (weekday === 4 && residualWasteThisWeek) {
+      notes.push("🗑️ Heute (Donnerstag): Restmüll.");
+    }
+  } else {
+    notes.push(`⚠️ Der hinterlegte Müllplan gilt für ${data.wasteScheduleYear}. Bitte den aktuellen Plan der Gemeinde prüfen.`);
   }
-  if (weekday === 4 && week % 2 === 1) notes.push("🗑️ Heute (Donnerstag): Restmüll – ungerade Kalenderwoche.");
 
   const dep = localStorage.getItem("houseDepartureDate");
   if (dep) {
