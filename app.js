@@ -85,6 +85,9 @@ document.getElementById("save-departure").addEventListener("click", () => {
   if (departureInput.value) localStorage.setItem("houseDepartureDate", departureInput.value);
   else localStorage.removeItem("houseDepartureDate");
   renderToday();
+  window.dispatchEvent(new CustomEvent("stay-updated", {
+    detail: { departureDate: departureInput.value || "" }
+  }));
 });
 
 function renderToday() {
