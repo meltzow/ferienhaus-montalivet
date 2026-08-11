@@ -2,6 +2,16 @@ const data = window.HOUSE_DATA;
 document.getElementById("house-name").textContent = data.houseName;
 document.title = data.houseName;
 
+const siteMeta = document.getElementById("site-meta");
+if (siteMeta) {
+  siteMeta.textContent = `Version ${data.siteVersion} · zuletzt aktualisiert ${data.lastUpdated}`;
+}
+
+const departureStand = document.getElementById("departure-stand");
+if (departureStand && data.departureUpdatedAt) {
+  departureStand.textContent = `Stand ${data.departureUpdatedAt}`;
+}
+
 const topicGrid = document.getElementById("topic-grid");
 const dialog = document.getElementById("topic-dialog");
 const dialogTitle = document.getElementById("dialog-title");
@@ -17,6 +27,7 @@ function renderTopics() {
       <div class="topic-card__icon">${topic.icon}</div>
       <h3>${topic.title}</h3>
       <p>${topic.teaser}</p>
+      ${topic.updatedAt ? `<div class="topic-card__meta">Stand ${topic.updatedAt}</div>` : ""}
     `;
     btn.addEventListener("click", () => openTopic(topic));
     topicGrid.appendChild(btn);
@@ -26,6 +37,7 @@ function renderTopics() {
 function openTopic(topic) {
   dialogEyebrow.textContent = topic.eyebrow || "";
   dialogTitle.textContent = `${topic.icon} ${topic.title}`;
+  const freshness = topic.updatedAt ? `<div class="info-stand">Stand ${topic.updatedAt}</div>` : "";
   const callout = topic.callout ? `<div class="callout">${topic.callout}</div>` : "";
   const image = topic.sourceImage
     ? `<details><summary>Originalübersicht anzeigen</summary><img src="${topic.sourceImage}" alt="Originalseite aus dem Hausbuch" style="width:100%;margin-top:10px;border-radius:12px"></details>`
@@ -34,6 +46,7 @@ function openTopic(topic) {
     ? `<p class="small muted"><a href="${topic.sourceUrl}" target="_blank" rel="noopener">${topic.sourceLabel || "Offizielle Quelle öffnen"} ↗</a></p>`
     : "";
   dialogBody.innerHTML = `
+    ${freshness}
     ${callout}
     <ul class="dialog-list">${topic.items.map(x => `<li>${x}</li>`).join("")}</ul>
     ${source}
