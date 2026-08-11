@@ -29,11 +29,23 @@
       <div>
         <div class="eyebrow">Euer Aufenthalt</div>
         <h2>Wann reist ihr ab?</h2>
-        <p>Das Datum wird nur auf diesem Gerät gespeichert. So kann die Seite die Abreise-Checkliste rechtzeitig hervorheben.</p>
+        <p>Das Datum wird auf diesem Gerät gespeichert. Wenn Benachrichtigungen aktiviert sind, wird es zusätzlich anonym für die Abreise-Erinnerung hinterlegt.</p>
       </div>
       <div class="stay-controls">
         <input id="departure-date" type="date" aria-label="Abreisedatum">
         <button id="save-departure" class="primary-btn">Speichern</button>
+      </div>
+    </section>
+
+    <section id="notification-card" class="notification-card" hidden>
+      <div>
+        <div class="eyebrow">Optional</div>
+        <h2>🔔 Erinnerungen aufs Handy</h2>
+        <p>Müll am Vorabend und die Abreise-Checkliste am Tag vor der Abfahrt – auch wenn die App gerade nicht geöffnet ist.</p>
+        <p id="notification-status" class="small muted" aria-live="polite"></p>
+      </div>
+      <div class="notification-actions">
+        <button id="notification-btn" class="primary-btn">🔔 Benachrichtigungen aktivieren</button>
       </div>
     </section>
 
@@ -106,7 +118,9 @@
     <p>Ferienhaus-Guide · <span id="site-meta">Version wird geladen …</span></p>
   </footer>
 
+  <script src="firebase-config.js"></script>
   <script src="house-data.js"></script>
   <script src="app.js"></script>
+  <script type="module" src="push.js"></script>
 </body>
 </html>
