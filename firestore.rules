@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /reminderRegistrations/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly([
+          'installationId',
+          'enabled',
+          'departureDate',
+          'timezone',
+          'locale',
+          'lastSeenAt',
+          'lastReminderKey',
+          'lastReminderAt'
+        ])
+        && request.resource.data.installationId is string
+        && request.resource.data.enabled is bool
+        && request.resource.data.departureDate is string
+        && request.resource.data.timezone is string
+        && request.resource.data.locale is string;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow list: if false;
+    }
+  }
+}
