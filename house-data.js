@@ -6,6 +6,9 @@ window.HOUSE_DATA = {
   // Beispiel für Deutschland: "491701234567"
   ownerWhatsApp: "",
 
+  // Offiziell geprüfter Müllplan. Bei Jahreswechsel bitte neu prüfen.
+  wasteScheduleYear: 2026,
+
   topics: [
     {
       id: "basics",
@@ -40,16 +43,20 @@ window.HOUSE_DATA = {
       id: "waste",
       icon: "🗑️",
       title: "Müll",
-      teaser: "Mülltrennung und Abholtage",
+      teaser: "Offizieller Müllplan 2026 für Montalivet",
       eyebrow: "Entsorgung",
-      callout: "Mittwoch: Verpackungen/Papier und Bioabfall – jede Woche. Donnerstag: Restmüll – laut Hausbuch nur in ungeraden Kalenderwochen.",
+      callout: "2026: Mittwochmorgen Verpackungen/Papier (gelb) + Bioabfall (grün). Restmüll (schwarz) Donnerstagmorgen. In Montalivet im Juli und August: jeden Donnerstag. Außerhalb Juli/August: laut offiziellem Plan in ungeraden Kalenderwochen.",
       items: [
-        "Verpackungen und Papier kommen in die Tonne für 'Emballages et Papier'.",
-        "Lebensmittelabfälle, Kaffee-/Teereste, Obst-/Gemüsereste, Essensreste und kompostierbare Abfälle kommen in den Bioabfall.",
-        "Restmüll wird laut Hausbuch nur in ungeraden Wochen abgeholt.",
-        "Für Glas gibt es Container.",
-        "Sperrige Dinge und bestimmte Wertstoffe gehören zur Déchèterie / Recyclerie."
+        "Die Tonnen für die morgendliche Abholung am Vorabend an den Straßenrand stellen; der Griff soll zur Straße zeigen.",
+        "Gelbe Tonne: Verpackungen und Papier – Mittwochmorgen.",
+        "Grüne Tonne: Bio-/Lebensmittelabfälle – Mittwochmorgen.",
+        "Schwarze Tonne: Restmüll – Donnerstagmorgen.",
+        "Sonderregel Montalivet im Juli und August: Restmüll jeden Donnerstag.",
+        "Außerhalb Juli/August: Restmüll laut offiziellem 2026-Plan in ungeraden Kalenderwochen.",
+        "Glas wird über Sammelcontainer entsorgt."
       ],
+      sourceLabel: "Offizielle Quelle: Mairie Vendays-Montalivet / Smicotom – Müllplan 2026",
+      sourceUrl: "https://www.vendays-montalivet.fr/collecte-de-dechets/",
       sourceImage: "assets/source/IMG_20260809_210452.jpg"
     },
     {
@@ -82,14 +89,17 @@ window.HOUSE_DATA = {
     },
     {
       id: "tips",
-      icon: "🍷",
-      title: "Umgebung",
-      teaser: "Vendays und ein kleiner Weintipp",
-      eyebrow: "Unterwegs",
+      icon: "📍",
+      title: "Vor Ort",
+      teaser: "Versorgung und offizielle Anlaufstellen",
+      eyebrow: "Montalivet & Vendays",
       items: [
-        "In Vendays gibt es Bäcker, Apotheke, Supermarkt, Tankstelle, Geldautomat und Post.",
-        "Im Hausbuch ist außerdem 'Château de Vin' als Ausflug-/Weintipp notiert."
-      ]
+        "Die Postagentur in Montalivet befindet sich am Place du Marché.",
+        "Laut Mairie gelten im Juli und August für die Postagentur Montalivet: Montag bis Freitag 8:45–14:30 Uhr, Samstag 8:45–12:30 Uhr.",
+        "Weitere aktuelle Informationen zu Geschäften, Dienstleistungen und Freizeitangeboten stehen im offiziellen Guide der Gemeinde."
+      ],
+      sourceLabel: "Offizielle Quelle: Mairie Vendays-Montalivet",
+      sourceUrl: "https://www.vendays-montalivet.fr/pratique/guide-pratique/"
     }
   ],
 
