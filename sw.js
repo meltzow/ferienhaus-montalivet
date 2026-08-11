@@ -1,10 +1,26 @@
-const CACHE = "ferienhaus-phase1-v1.2";
+// Firebase Cloud Messaging wird nur geladen, wenn Phase 2a vollständig konfiguriert ist.
+try {
+  importScripts("./firebase-config.js");
+  if (globalThis.FIREBASE_PUSH?.enabled) {
+    const firebaseVersion = globalThis.FIREBASE_PUSH.sdkVersion || "12.16.0";
+    importScripts(`https://www.gstatic.com/firebasejs/${firebaseVersion}/firebase-app-compat.js`);
+    importScripts(`https://www.gstatic.com/firebasejs/${firebaseVersion}/firebase-messaging-compat.js`);
+    firebase.initializeApp(globalThis.FIREBASE_PUSH.config);
+    firebase.messaging();
+  }
+} catch (error) {
+  console.warn("Firebase Messaging konnte im Service Worker nicht initialisiert werden.", error);
+}
+
+const CACHE = "ferienhaus-phase1-v1.3";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
+  "./firebase-config.js",
   "./house-data.js",
   "./app.js",
+  "./push.js",
   "./manifest.webmanifest",
   "./icon.svg"
 ];
@@ -23,6 +39,10 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
+
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
+
   event.respondWith(
     caches.match(event.request).then(cached =>
       cached || fetch(event.request).then(response => {
