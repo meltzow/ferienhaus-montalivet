@@ -1,6 +1,10 @@
 window.HOUSE_DATA = {
   houseName: "Ferienhaus Montalivet",
 
+  // Bei jeder inhaltlichen Änderung Version und Datum aktualisieren.
+  siteVersion: "1.2",
+  lastUpdated: "11.08.2026",
+
   // PHASE 1: Hier die WhatsApp-Nummer des Hauseigentümers eintragen.
   // Format: Ländervorwahl + Nummer OHNE +, Leerzeichen oder führende 0.
   // Beispiel für Deutschland: "491701234567"
@@ -16,6 +20,7 @@ window.HOUSE_DATA = {
       title: "Gut zu wissen",
       teaser: "Bettwäsche, Handtücher, Fahrräder & Kühlschrank",
       eyebrow: "Im Haus",
+      updatedAt: "08/26",
       items: [
         "Bettlaken liegen in den Schränken der jeweiligen Zimmer.",
         "Bettwäsche sowie zusätzliche Kissen und Decken liegen in den Schränken bei der Garderobe.",
@@ -32,6 +37,7 @@ window.HOUSE_DATA = {
       title: "Wäsche",
       teaser: "Waschmaschine, Trockner, Leine & Bügeleisen",
       eyebrow: "Waschen",
+      updatedAt: "08/26",
       items: [
         "Die Waschmaschine steht im Bad; die Programmbeschreibung befindet sich dort.",
         "Die Wäscheleine ist hinter dem kleinen Schuppen.",
@@ -45,6 +51,7 @@ window.HOUSE_DATA = {
       title: "Müll",
       teaser: "Offizieller Müllplan 2026 für Montalivet",
       eyebrow: "Entsorgung",
+      updatedAt: "08/26",
       callout: "2026: Mittwochmorgen Verpackungen/Papier (gelb) + Bioabfall (grün). Restmüll (schwarz) Donnerstagmorgen. In Montalivet im Juli und August: jeden Donnerstag. Außerhalb Juli/August: laut offiziellem Plan in ungeraden Kalenderwochen.",
       items: [
         "Die Tonnen für die morgendliche Abholung am Vorabend an den Straßenrand stellen; der Griff soll zur Straße zeigen.",
@@ -65,6 +72,7 @@ window.HOUSE_DATA = {
       title: "Heizung & Öfen",
       teaser: "Therme und Pelletöfen",
       eyebrow: "Warm machen",
+      updatedAt: "08/26",
       items: [
         "An der Therme die Klappe am Display aufklappen.",
         "Die mittlere Taste drücken und das Heizsymbol auswählen.",
@@ -79,6 +87,7 @@ window.HOUSE_DATA = {
       title: "Pool",
       teaser: "Die wenigen Dinge, die ihr selbst machen müsst",
       eyebrow: "Poolpflege",
+      updatedAt: "08/26",
       items: [
         "Blätter aus dem Pool herauskeschern.",
         "Den Poolroboter laufen lassen und anschließend den Schmutzbehälter leeren.",
@@ -93,6 +102,7 @@ window.HOUSE_DATA = {
       title: "Vor Ort",
       teaser: "Versorgung und offizielle Anlaufstellen",
       eyebrow: "Montalivet & Vendays",
+      updatedAt: "08/26",
       items: [
         "Die Postagentur in Montalivet befindet sich am Place du Marché.",
         "Laut Mairie gelten im Juli und August für die Postagentur Montalivet: Montag bis Freitag 8:45–14:30 Uhr, Samstag 8:45–12:30 Uhr.",
@@ -103,6 +113,7 @@ window.HOUSE_DATA = {
     }
   ],
 
+  departureUpdatedAt: "08/26",
   departureChecklist: [
     "Bettzeug und Laken abziehen und vor die Waschmaschine legen.",
     "Optional: Eine Waschmaschine bereits füllen und auf 60 °C anstellen.",
