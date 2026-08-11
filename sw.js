@@ -1,4 +1,4 @@
-const CACHE = "ferienhaus-phase1-v1.1";
+const CACHE = "ferienhaus-phase1-v1.2";
 const ASSETS = [
   "./",
   "./index.html",
