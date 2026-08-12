@@ -6,13 +6,12 @@ const notificationStatus = document.getElementById("notification-status");
 if (!notificationCard || !notificationButton || !notificationStatus) {
   console.warn("Push UI not found.");
 } else if (!pushSettings?.enabled) {
-  // Solange Firebase noch nicht verbunden ist, sehen Gäste keine unfertige Funktion.
   notificationCard.hidden = true;
 } else {
   notificationCard.hidden = false;
   initPush().catch(error => {
     console.error("Push initialization failed", error);
-    setStatus("Benachrichtigungen konnten nicht initialisiert werden.", "error");
+    setStatus(`Initialisierung fehlgeschlagen: ${describeError(error)}`, "error");
   });
 }
 
@@ -59,7 +58,7 @@ async function initPush() {
       refreshUi();
     } catch (error) {
       console.error("Could not save FCM registration", error);
-      setStatus("Benachrichtigung ist registriert, konnte aber nicht gespeichert werden.", "error");
+      setStatus(`Gerät ist bei FCM registriert, Speichern fehlgeschlagen: ${describeError(error)}`, "error");
     }
   });
 
@@ -96,7 +95,6 @@ async function initPush() {
 
   refreshUi();
 
-  // Bereits aktivierte Geräte bei jedem App-Start frisch registrieren.
   if (localStorage.getItem("housePushEnabled") === "true" && Notification.permission === "granted") {
     const departure = localStorage.getItem("houseDepartureDate");
     if (departure) {
@@ -121,27 +119,31 @@ async function initPush() {
     }
 
     notificationButton.disabled = true;
-    setStatus("Benachrichtigungen werden aktiviert …", "info");
 
     try {
+      setStatus("1/4 Benachrichtigungsfreigabe wird geprüft …", "info");
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
         setStatus("Benachrichtigungen wurden im Browser nicht erlaubt.", "error");
         return;
       }
 
+      setStatus("2/4 Anonyme Geräte-Anmeldung bei Firebase …", "info");
       await ensureAnonymousUser(auth, authSdk);
+
+      setStatus("3/4 Service Worker wird vorbereitet …", "info");
       const swRegistration = await navigator.serviceWorker.ready;
+
+      setStatus("4/4 Gerät wird bei Firebase Cloud Messaging registriert …", "info");
       await messagingSdk.register(messaging, {
         vapidKey: pushSettings.vapidKey,
         serviceWorkerRegistration: swRegistration
       });
 
-      // Der endgültige Status wird nach onRegistered gesetzt.
-      setStatus("Gerät wird registriert …", "info");
+      setStatus("Gerät wurde bei FCM registriert. Registrierung wird gespeichert …", "info");
     } catch (error) {
       console.error("Could not enable push", error);
-      setStatus("Benachrichtigungen konnten nicht aktiviert werden.", "error");
+      setStatus(`Aktivierung fehlgeschlagen: ${describeError(error)}`, "error");
     } finally {
       notificationButton.disabled = false;
     }
@@ -160,7 +162,7 @@ async function initPush() {
       refreshUi();
     } catch (error) {
       console.error("Could not disable push", error);
-      setStatus("Benachrichtigungen konnten nicht vollständig deaktiviert werden.", "error");
+      setStatus(`Deaktivieren fehlgeschlagen: ${describeError(error)}`, "error");
     } finally {
       notificationButton.disabled = false;
     }
@@ -210,6 +212,31 @@ async function saveRegistration({ user, installationId, db, firestoreSdk }) {
     },
     { merge: true }
   );
+}
+
+function describeError(error) {
+  const code = error?.code || "";
+  const message = String(error?.message || error || "Unbekannter Fehler")
+    .replace(/^Firebase:\s*/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (code === "auth/operation-not-allowed") {
+    return `${code} – Anonyme Anmeldung ist in Firebase noch nicht aktiviert.`;
+  }
+  if (code === "auth/unauthorized-domain") {
+    return `${code} – meltzow.github.io muss in Firebase Authentication als autorisierte Domain eingetragen werden.`;
+  }
+  if (code === "messaging/failed-service-worker-registration") {
+    return `${code} – der Service Worker konnte nicht für Push registriert werden.`;
+  }
+  if (code === "messaging/unsupported-browser") {
+    return `${code} – dieser Browser unterstützt Firebase Web Push nicht.`;
+  }
+  if (code.includes("subscribe") || code.includes("registration")) {
+    return `${code || "FCM"} – ${message}. Falls die Meldung die FCM Registration API erwähnt, muss sie im Google-Cloud-Projekt aktiviert werden.`;
+  }
+  return code ? `${code} – ${message}` : message;
 }
 
 function setStatus(message, kind = "info") {
