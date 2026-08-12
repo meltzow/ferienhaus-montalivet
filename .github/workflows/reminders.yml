@@ -1,0 +1,39 @@
+name: Ferienhaus Erinnerungen
+
+on:
+  schedule:
+    - cron: "15 18 * * *"
+      timezone: "Europe/Paris"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Test sendet sofort an alle aktiven Geräte; scheduled prüft den normalen Tagesplan."
+        required: true
+        default: "test"
+        type: choice
+        options:
+          - test
+          - scheduled
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      REMINDER_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'scheduled' }}
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Abhängigkeiten installieren
+        run: npm install --omit=dev --no-audit --no-fund
+
+      - name: Erinnerungen prüfen und senden
+        run: npm run reminders
