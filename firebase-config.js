@@ -1,16 +1,16 @@
 // Öffentliche Firebase-Web-Konfiguration für Phase 2a.
-// Die Werte hier sind KEINE Secrets. Der private Serverzugang liegt ausschließlich
-// in Firebase/Google Cloud. Push bleibt unsichtbar, bis enabled auf true gesetzt ist.
+// Diese Werte sind für eine Firebase-Web-App öffentlich und keine Server-Secrets.
+// Push bleibt bis zum Backend-Deployment ausgeblendet; danach enabled auf true setzen.
 globalThis.FIREBASE_PUSH = {
   enabled: false,
-  sdkVersion: "12.16.0",
+  sdkVersion: "12.17.1",
   config: {
-    apiKey: "",
-    authDomain: "",
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: ""
+    apiKey: "AIzaSyAC4GqV1q2c44S5ZL8o0lj0nTtMkkkyx-4",
+    authDomain: "ferienhaus-montalivet.firebaseapp.com",
+    projectId: "ferienhaus-montalivet",
+    storageBucket: "ferienhaus-montalivet.firebasestorage.app",
+    messagingSenderId: "1036112467100",
+    appId: "1:1036112467100:web:90adb531f1d271c8c3c959"
   },
-  vapidKey: ""
+  vapidKey: "BIKhcIVotZhhw5GuPPnioPKIhln_R1XWBnYMZXe2oJhsW6lKhREHKWiAORZ7AAGSrG-xAJGkABBq4qKTf_3aJMM"
 };
