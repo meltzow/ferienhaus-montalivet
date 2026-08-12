@@ -1,9 +1,8 @@
 // Öffentliche Firebase-Web-Konfiguration für Phase 2a.
 // Diese Werte sind für eine Firebase-Web-App öffentlich und keine Server-Secrets.
-// Das kostenlose Backend läuft über GitHub Actions. Push wird nach dem einmaligen
-// Einrichten des GitHub-Secrets und der Firestore-Regeln aktiviert.
+// Das kostenlose Backend läuft über GitHub Actions.
 globalThis.FIREBASE_PUSH = {
-  enabled: false,
+  enabled: true,
   sdkVersion: "12.17.1",
   config: {
     apiKey: "AIzaSyAC4GqV1q2c44S5ZL8o0lj0nTtMkkkyx-4",
