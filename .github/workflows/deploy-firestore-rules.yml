@@ -1,0 +1,35 @@
+name: Firebase Regeln deployen
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-rules:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Service-Account prüfen
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::GitHub Secret FIREBASE_SERVICE_ACCOUNT fehlt."
+            exit 1
+          fi
+
+      - name: Application Default Credentials vorbereiten
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
+
+      - name: Firestore-Regeln deployen
+        run: npx --yes firebase-tools@latest deploy --only firestore:rules --project ferienhaus-montalivet --non-interactive
