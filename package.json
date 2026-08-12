@@ -1,0 +1,11 @@
+{
+  "name": "ferienhaus-montalivet-reminders",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "reminders": "node scripts/send-reminders.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "14.2.0"
+  }
+}
