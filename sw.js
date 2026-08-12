@@ -2,7 +2,7 @@
 try {
   importScripts("./firebase-config.js");
   if (globalThis.FIREBASE_PUSH?.enabled) {
-    const firebaseVersion = globalThis.FIREBASE_PUSH.sdkVersion || "12.16.0";
+    const firebaseVersion = globalThis.FIREBASE_PUSH.sdkVersion || "12.17.1";
     importScripts(`https://www.gstatic.com/firebasejs/${firebaseVersion}/firebase-app-compat.js`);
     importScripts(`https://www.gstatic.com/firebasejs/${firebaseVersion}/firebase-messaging-compat.js`);
     firebase.initializeApp(globalThis.FIREBASE_PUSH.config);
@@ -12,7 +12,7 @@ try {
   console.warn("Firebase Messaging konnte im Service Worker nicht initialisiert werden.", error);
 }
 
-const CACHE = "ferienhaus-phase1-v1.3";
+const CACHE = "ferienhaus-phase1-v1.4";
 const ASSETS = [
   "./",
   "./index.html",
