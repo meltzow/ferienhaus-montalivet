@@ -1,46 +1,92 @@
-# Phase 2a – Push-Benachrichtigungen einrichten
+# Phase 2a – Push kostenlos mit GitHub Actions
 
-Der Code für Müll- und Abreise-Erinnerungen ist bereits im Repository. Die Funktion bleibt für Gäste unsichtbar, bis Firebase einmalig verbunden wurde.
+Die Erinnerungen laufen ohne Firebase Cloud Functions und ohne Blaze-Tarif.
 
 ## Architektur
 
-- GitHub Pages bleibt die Web-App / PWA.
-- Firebase Authentication meldet jedes Gerät anonym an.
-- Cloud Firestore speichert nur die aktive Geräte-Registrierung, Abreisedatum, Zeitzone und Sprache.
-- Firebase Cloud Messaging (FCM) liefert Web-Push.
-- Eine geplante Cloud Function läuft täglich um 18:15 Uhr `Europe/Paris` und prüft:
-  - Dienstagabend: gelbe + grüne Tonne für Mittwoch
-  - Mittwochabend: schwarze Tonne für Donnerstag, nach Müllplan 2026
-  - am Abend vor der Abreise: Abreise-Checkliste
-- Am bzw. nach dem Abreisetag wird die Geräte-Registrierung automatisch gelöscht.
+- **GitHub Pages** bleibt die Web-App / PWA.
+- **Firebase Authentication (Anonymous)** meldet jedes Gastgerät anonym an.
+- **Cloud Firestore (Spark / kostenlos)** speichert die aktive Geräte-Registrierung und das Abreisedatum.
+- **Firebase Cloud Messaging (FCM)** liefert Web-Push.
+- **GitHub Actions** ersetzt den kostenpflichtigen Scheduler und läuft täglich um 18:15 Uhr `Europe/Paris`.
 
-## Einmalige Firebase-Einrichtung
+Geprüft werden:
 
-1. In der Firebase Console ein neues Projekt anlegen, z. B. `ferienhaus-montalivet`.
-2. Eine **Web-App** zum Projekt hinzufügen.
-3. Unter **Authentication → Sign-in method** den Anbieter **Anonymous / Anonym** aktivieren.
-4. **Cloud Firestore** anlegen; eine europäische Region wählen.
-5. Unter **Project settings → Cloud Messaging → Web Push certificates** ein VAPID-Schlüsselpaar erzeugen.
-6. Die Web-Konfiguration und den **öffentlichen** VAPID-Key in `firebase-config.js` eintragen und `enabled: true` setzen.
-7. Für geplante Cloud Functions muss das Firebase-Projekt den Blaze-Tarif verwenden.
-8. Firebase CLI installieren/anmelden und im Repository ausführen:
+- Dienstagabend: gelbe + grüne Tonne für Mittwochmorgen
+- Mittwochabend: schwarze Tonne für Donnerstagmorgen nach Müllplan 2026
+- Abend vor der Abreise: Link zur Abreise-Checkliste
+- abgelaufene Aufenthalte: Registrierung wird automatisch gelöscht
 
-```bash
-firebase login
-firebase use --add
-cd functions
-npm install
-cd ..
-firebase deploy --only firestore:rules,functions
+## Was bereits eingerichtet ist
+
+- Firebase-Web-App ist in `firebase-config.js` eingetragen.
+- Öffentlicher VAPID-Key ist eingetragen.
+- Anonymous Authentication und Firestore müssen im Firebase-Projekt aktiviert sein.
+- Workflow `.github/workflows/reminders.yml` ist vorhanden.
+- Firestore-Regeln liegen in `firestore.rules`.
+
+## Einmalig: Server-Zugang als GitHub Secret hinterlegen
+
+Damit GitHub Actions Firestore lesen und Push-Nachrichten über FCM senden darf, braucht der Workflow einen privaten Firebase-Service-Account. Dieser Schlüssel darf **niemals** in das Repository committed werden.
+
+1. Firebase Console öffnen.
+2. **Projekteinstellungen → Dienstkonten / Service accounts** öffnen.
+3. Unter **Firebase Admin SDK** auf **Neuen privaten Schlüssel generieren / Generate new private key** klicken.
+4. Die heruntergeladene JSON-Datei öffnen und den **gesamten JSON-Inhalt** kopieren.
+5. GitHub öffnen: `meltzow/ferienhaus-montalivet` → **Settings → Secrets and variables → Actions**.
+6. **New repository secret** wählen.
+7. Name exakt: `FIREBASE_SERVICE_ACCOUNT`
+8. Als Wert den kompletten Inhalt der JSON-Datei einfügen und speichern.
+
+Die JSON-Datei danach sicher aufbewahren oder lokal löschen. Sie darf nicht in GitHub hochgeladen werden.
+
+## Firestore-Regeln einmalig veröffentlichen
+
+Nach dem Secret:
+
+1. GitHub → Repository → **Actions**.
+2. Workflow **Firebase Regeln deployen** öffnen.
+3. **Run workflow** starten.
+4. Der Lauf muss grün enden.
+
+Der Workflow nutzt den gleichen Service-Account und veröffentlicht ausschließlich `firestore.rules`. Es werden keine Cloud Functions deployed.
+
+## Push auf der Webseite freischalten
+
+Wenn der Regeln-Workflow erfolgreich war, in `firebase-config.js`:
+
+```js
+enabled: false,
 ```
 
-## Test
+auf
 
-1. GitHub Pages nach dem Commit neu laden.
-2. Abreisedatum setzen.
-3. `Benachrichtigungen aktivieren` drücken und Browser-Freigabe erteilen.
-4. In Firestore muss ein Dokument unter `reminderRegistrations` erscheinen.
-5. Für einen schnellen Funktionstest kann die Schedule-Funktion temporär auf eine nahe Uhrzeit gestellt und danach wieder auf `15 18 * * *` zurückgesetzt werden.
+```js
+enabled: true,
+```
+
+ändern. Danach PWA-Cache-Version in `sw.js` erhöhen.
+
+## Erstes Gerät registrieren
+
+1. GitHub Pages neu laden bzw. die installierte PWA neu öffnen.
+2. Abreisedatum speichern.
+3. **Benachrichtigungen aktivieren** drücken.
+4. Browser-/Systemfreigabe erlauben.
+5. In Firestore erscheint anschließend ein Dokument unter `reminderRegistrations`.
+
+Auf iPhone/iPad muss die Seite zuerst als Home-Screen-Web-App installiert und von dort geöffnet werden.
+
+## Push sofort testen
+
+Sobald mindestens ein Gerät registriert ist:
+
+1. GitHub → **Actions → Ferienhaus Erinnerungen**.
+2. **Run workflow**.
+3. Modus `test` auswählen.
+4. Nach erfolgreichem Lauf sollte sofort eine Testbenachrichtigung eintreffen.
+
+Der normale Zeitplan verwendet automatisch den Modus `scheduled`.
 
 ## Datenschutz / gespeicherte Daten
 
@@ -53,8 +99,14 @@ Pro aktivem Gerät werden gespeichert:
 - Browsersprache
 - letzter Kontakt / letzte gesendete Erinnerung
 
-Es werden für Phase 2a keine Namen, E-Mail-Adressen oder Telefonnummern benötigt.
+Keine Namen, E-Mail-Adressen oder Telefonnummern sind für Phase 2a nötig.
 
-## Wichtig beim Jahreswechsel
+## Kostenlos-Limits / Besonderheiten
 
-Der automatische Müll-Push ist absichtlich auf den offiziell geprüften Müllplan **2026** begrenzt. Für 2027 wird kein Müll-Push versendet, bis der neue Plan geprüft und `WASTE_SCHEDULE_YEAR` in `functions/index.js` aktualisiert wurde. Abreise-Erinnerungen funktionieren unabhängig davon weiter.
+Für dieses kleine Ferienhaus-Szenario liegen die Firestore-Zugriffe sehr weit unter den kostenlosen Quoten. GitHub Actions ist für das öffentliche Repository mit Standard-Runnern kostenlos.
+
+Wichtig: GitHub deaktiviert geplante Workflows in öffentlichen Repositories automatisch, wenn 60 Tage lang keine Repository-Aktivität stattgefunden hat. Dann muss der Workflow unter **Actions** wieder aktiviert werden.
+
+## Jahreswechsel
+
+Automatische Müll-Pushs sind absichtlich auf den geprüften Müllplan **2026** begrenzt. Vor 2027 muss `WASTE_SCHEDULE_YEAR` in `scripts/send-reminders.mjs` nach Prüfung des neuen Müllplans aktualisiert werden. Abreise-Erinnerungen funktionieren davon unabhängig.
