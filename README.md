@@ -1,83 +1,67 @@
-# Ferienhaus Montalivet – Phase 1
+# Ferienhaus Montalivet
 
-Das ist eine **statische, mobile Web-App / PWA** für GitHub Pages.
+Mobile Web-App / PWA für Gäste des Ferienhauses, gehostet über GitHub Pages.
 
 ## Enthalten
 
 - mobile Startseite mit Schnellzugriff
-- Inhalte aus den 7 Fotos des Hausbuchs
-- Müllhinweise nach Wochentag:
-  - Mittwoch: Verpackungen/Papier + Bioabfall
-  - Donnerstag in ungeraden Kalenderwochen: Restmüll
-- Abreisedatum lokal auf dem Gastgerät
-- hervorgehobener Hinweis vor/am Abreisetag
+- Inhalte aus dem Hausbuch
+- offiziell geprüfter Müllplan 2026 für Montalivet
+- automatische Hinweise auf der Startseite
+- Abreisedatum auf dem Gastgerät
 - abhakbare Abreise-Checkliste
 - Frage/Problem per vorbereiteter WhatsApp-Nachricht
 - PWA / "Zum Startbildschirm hinzufügen"
 - Offline-Cache für die Kernseiten
-- Originalfotos des Hausbuchs als Referenz
+- Stand/Alter pro Themenbereich
+- Phase 2a vorbereitet: aktive Push-Erinnerungen für Müll und Abreise
 
-## Vor Veröffentlichung anpassen
+## Phase 2a – kostenlos
 
-Öffne `house-data.js` und trage bei
+Die Push-Architektur benötigt keinen Firebase-Blaze-Tarif:
 
-```js
-ownerWhatsApp: ""
-```
+- GitHub Pages: Frontend/PWA
+- Firebase Spark: Anonymous Authentication + Firestore + Cloud Messaging
+- GitHub Actions: täglicher Scheduler um 18:15 Uhr Europe/Paris
 
-die WhatsApp-Nummer des Hauseigentümers ein.
+Die vollständige Einrichtung steht in [`SETUP_PUSH.md`](SETUP_PUSH.md).
 
-Format z. B. für eine deutsche Mobilnummer:
+## Push-Erinnerungen
+
+Nach der einmaligen Einrichtung kann ein Gast:
+
+1. Abreisedatum speichern.
+2. Benachrichtigungen aktivieren.
+3. Müll-Erinnerungen am Vorabend erhalten.
+4. Am Tag vor der Abreise zur Checkliste erinnert werden.
+
+Die aktive Registrierung wird nach dem Aufenthalt automatisch entfernt.
+
+## WhatsApp
+
+In `house-data.js` bei `ownerWhatsApp` die Zielnummer eintragen, Format z. B.:
 
 ```js
 ownerWhatsApp: "491701234567"
 ```
 
-also ohne `+`, Leerzeichen oder führende `0`.
+ohne `+`, Leerzeichen oder führende `0`.
 
-## Lokal testen
-
-Einfach im Ordner einen kleinen Webserver starten, z. B.:
-
-```bash
-python3 -m http.server 8000
-```
-
-Danach im Browser öffnen:
-
-```text
-http://localhost:8000
-```
-
-Service Worker / PWA-Funktionen funktionieren am zuverlässigsten über HTTPS
-(bei GitHub Pages automatisch vorhanden).
-
-## Auf GitHub Pages veröffentlichen
-
-1. Neues Repository anlegen, z. B. `ferienhaus-montalivet`
-2. Den **Inhalt dieses Ordners** in das Repository hochladen
-3. In GitHub: `Settings` → `Pages`
-4. Deployment aus dem Branch `main`, Verzeichnis `/ (root)` auswählen
-5. Nach dem Deployment die veröffentlichte URL öffnen
-6. Aus genau dieser URL anschließend den QR-Code erstellen
-
-## Wichtig für Phase 1
-
-GitHub Pages ist statisch. Daher gibt es in dieser Version:
-
-- **keinen Eigentümer-Login**
-- **keine zentrale Speicherung von Aufenthalten**
-- **keine echte automatische Push-Erinnerung bei geschlossener Seite**
-- **keine KI-Fragefunktion**
-
-Diese Punkte wären Phase 2/3.
-
-## Dateien
+## Wichtige Dateien
 
 - `index.html` – Oberfläche
 - `styles.css` – Design
-- `house-data.js` – Inhalte / Konfiguration
-- `app.js` – Logik
-- `manifest.webmanifest` – PWA
-- `sw.js` – Offline-Cache
-- `assets/source/` – Originalfotos
+- `house-data.js` – Hausinhalte, Versions- und Aktualitätsangaben
+- `app.js` – lokale App-Logik
+- `push.js` – Push-Registrierung im Browser
+- `firebase-config.js` – öffentliche Firebase-Web-Konfiguration
+- `firestore.rules` – Zugriffsschutz für Gastregistrierungen
+- `scripts/send-reminders.mjs` – Reminder-Logik auf GitHub Actions
+- `.github/workflows/reminders.yml` – täglicher kostenloser Scheduler
+- `.github/workflows/deploy-firestore-rules.yml` – einmaliger Rules-Deploy
+- `sw.js` – PWA-Service-Worker und FCM-Hintergrundempfang
+- `assets/source/` – Originalfotos aus dem Hausbuch
+
+## Jahreswechsel
+
+Der Müllplan ist auf 2026 begrenzt. Vor 2027 müssen die offiziellen Abholtermine erneut geprüft und sowohl die App-Daten als auch `WASTE_SCHEDULE_YEAR` in `scripts/send-reminders.mjs` aktualisiert werden.
