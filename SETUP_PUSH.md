@@ -21,9 +21,9 @@ Geprüft werden:
 
 - Firebase-Web-App ist in `firebase-config.js` eingetragen.
 - Öffentlicher VAPID-Key ist eingetragen.
-- Anonymous Authentication und Firestore müssen im Firebase-Projekt aktiviert sein.
+- Anonymous Authentication und Firestore sind im Firebase-Projekt aktiviert.
 - Workflow `.github/workflows/reminders.yml` ist vorhanden.
-- Firestore-Regeln liegen in `firestore.rules`.
+- Firestore-Regeln liegen versioniert in `firestore.rules`.
 
 ## Einmalig: Server-Zugang als GitHub Secret hinterlegen
 
@@ -40,20 +40,20 @@ Damit GitHub Actions Firestore lesen und Push-Nachrichten über FCM senden darf,
 
 Die JSON-Datei danach sicher aufbewahren oder lokal löschen. Sie darf nicht in GitHub hochgeladen werden.
 
-## Firestore-Regeln einmalig veröffentlichen
+## Firestore-Regeln einmalig in Firebase veröffentlichen
 
-Nach dem Secret:
+Der Firebase-CLI-Deploy über den Admin-SDK-Service-Account benötigt zusätzliche Google-Cloud-IAM-Rechte (`serviceusage.services.get`). Für dieses kleine Projekt ist es einfacher und sicherer, die Regeln direkt in der Firebase Console zu veröffentlichen.
 
-1. GitHub → Repository → **Actions**.
-2. Workflow **Firebase Regeln deployen** öffnen.
-3. **Run workflow** starten.
-4. Der Lauf muss grün enden.
+1. Firebase Console → Projekt `ferienhaus-montalivet`.
+2. **Firestore Database → Rules / Regeln** öffnen.
+3. Den kompletten Inhalt aus `firestore.rules` im GitHub-Repository in den Editor kopieren.
+4. **Publish / Veröffentlichen** drücken.
 
-Der Workflow nutzt den gleichen Service-Account und veröffentlicht ausschließlich `firestore.rules`. Es werden keine Cloud Functions deployed.
+Die Datei `firestore.rules` bleibt die versionierte Referenz im Repository. Bei späteren Änderungen müssen Console und Repository synchron gehalten werden.
 
 ## Push auf der Webseite freischalten
 
-Wenn der Regeln-Workflow erfolgreich war, in `firebase-config.js`:
+Wenn die Firestore-Regeln veröffentlicht sind, in `firebase-config.js`:
 
 ```js
 enabled: false,
@@ -70,7 +70,7 @@ enabled: true,
 ## Erstes Gerät registrieren
 
 1. GitHub Pages neu laden bzw. die installierte PWA neu öffnen.
-2. Abreisedatum speichern.
+2. Abreisedatum setzen und speichern.
 3. **Benachrichtigungen aktivieren** drücken.
 4. Browser-/Systemfreigabe erlauben.
 5. In Firestore erscheint anschließend ein Dokument unter `reminderRegistrations`.
@@ -88,25 +88,6 @@ Sobald mindestens ein Gerät registriert ist:
 
 Der normale Zeitplan verwendet automatisch den Modus `scheduled`.
 
-## Datenschutz / gespeicherte Daten
+## Wichtig beim Jahreswechsel
 
-Pro aktivem Gerät werden gespeichert:
-
-- Firebase Installation ID (FID)
-- anonym erzeugte Firebase-User-ID als Dokument-ID
-- Abreisedatum
-- Zeitzone
-- Browsersprache
-- letzter Kontakt / letzte gesendete Erinnerung
-
-Keine Namen, E-Mail-Adressen oder Telefonnummern sind für Phase 2a nötig.
-
-## Kostenlos-Limits / Besonderheiten
-
-Für dieses kleine Ferienhaus-Szenario liegen die Firestore-Zugriffe sehr weit unter den kostenlosen Quoten. GitHub Actions ist für das öffentliche Repository mit Standard-Runnern kostenlos.
-
-Wichtig: GitHub deaktiviert geplante Workflows in öffentlichen Repositories automatisch, wenn 60 Tage lang keine Repository-Aktivität stattgefunden hat. Dann muss der Workflow unter **Actions** wieder aktiviert werden.
-
-## Jahreswechsel
-
-Automatische Müll-Pushs sind absichtlich auf den geprüften Müllplan **2026** begrenzt. Vor 2027 muss `WASTE_SCHEDULE_YEAR` in `scripts/send-reminders.mjs` nach Prüfung des neuen Müllplans aktualisiert werden. Abreise-Erinnerungen funktionieren davon unabhängig.
+Der automatische Müll-Push ist absichtlich auf den offiziell geprüften Müllplan **2026** begrenzt. Für 2027 wird kein Müll-Push versendet, bis der neue Müllplan geprüft und die Jahreszahl im Reminder-Skript aktualisiert wurde. Abreise-Erinnerungen funktionieren unabhängig davon weiter.
