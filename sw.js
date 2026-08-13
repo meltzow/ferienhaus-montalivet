@@ -15,11 +15,12 @@ try {
 const CACHE = "ferienhaus-phase1-v1.8";
 const ASSETS = [
   "./",
+  "./?v=1.8",
   "./index.html",
-  "./styles.css",
+  "./styles.css?v=1.8",
   "./firebase-config.js",
-  "./house-data.js",
-  "./app.js",
+  "./house-data.js?v=1.8",
+  "./app.js?v=1.8",
   "./push.js",
   "./manifest.webmanifest",
   "./icon.svg"
