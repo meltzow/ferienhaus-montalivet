@@ -12,7 +12,7 @@ try {
   console.warn("Firebase Messaging konnte im Service Worker nicht initialisiert werden.", error);
 }
 
-const CACHE = "ferienhaus-phase1-v1.6";
+const CACHE = "ferienhaus-phase1-v1.7";
 const ASSETS = [
   "./",
   "./index.html",
