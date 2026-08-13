@@ -2,7 +2,7 @@ window.HOUSE_DATA = {
   houseName: "Ferienhaus Montalivet",
 
   // Bei jeder inhaltlichen Änderung Version und Datum aktualisieren.
-  siteVersion: "1.8",
+  siteVersion: "2.0",
   lastUpdated: "13.08.2026",
 
   // PHASE 1: Hier die WhatsApp-Nummer des Hauseigentümers eintragen.
