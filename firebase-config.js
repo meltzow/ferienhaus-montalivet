@@ -5,7 +5,7 @@ globalThis.FIREBASE_PUSH = {
   enabled: true,
   sdkVersion: "12.16.0",
   config: {
-    apiKey: "AIzaSyAC4GqV1q2c44S5ZL8o0lj0nTtMkkkyx-4",
+    apiKey: "AIzaSyAC4GqV1q2c44S5ZL8oOljOnTtMkkkyx-4",
     authDomain: "ferienhaus-montalivet.firebaseapp.com",
     projectId: "ferienhaus-montalivet",
     storageBucket: "ferienhaus-montalivet.firebasestorage.app",
