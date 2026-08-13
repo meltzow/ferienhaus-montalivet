@@ -40,6 +40,33 @@ async function initPush() {
   const messaging = messagingSdk.getMessaging(app);
   let currentFid = null;
 
+  // FCM zeigt Notification-Payloads im Hintergrund automatisch an. Wenn die PWA
+  // aber gerade im Vordergrund geöffnet ist, kommt die Nachricht nur über onMessage.
+  // Deshalb erzeugen wir in diesem Fall selbst eine normale System-Benachrichtigung.
+  messagingSdk.onMessage(messaging, async payload => {
+    const notification = payload.notification || {};
+    const data = payload.data || {};
+    const title = notification.title || data.title || "Ferienhaus Montalivet";
+    const body = notification.body || data.body || "Es gibt eine neue Erinnerung.";
+
+    try {
+      const swRegistration = await navigator.serviceWorker.ready;
+      await swRegistration.showNotification(title, {
+        body,
+        icon: "./icon.svg",
+        badge: "./icon.svg",
+        tag: data.tag || "ferienhaus-reminder",
+        renotify: true,
+        data: {
+          url: data.url || "https://meltzow.github.io/ferienhaus-montalivet/#departure"
+        }
+      });
+    } catch (error) {
+      console.error("Foreground notification could not be shown", error);
+      setStatus(`Push empfangen, Anzeige fehlgeschlagen: ${describeError(error)}`, "error");
+    }
+  });
+
   const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 
