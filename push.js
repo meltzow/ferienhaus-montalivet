@@ -40,9 +40,7 @@ async function initPush() {
   const messaging = messagingSdk.getMessaging(app);
   let currentFid = null;
 
-  // FCM zeigt Notification-Payloads im Hintergrund automatisch an. Wenn die PWA
-  // aber gerade im Vordergrund geöffnet ist, kommt die Nachricht nur über onMessage.
-  // Deshalb erzeugen wir in diesem Fall selbst eine normale System-Benachrichtigung.
+  // Wenn die PWA im Vordergrund geöffnet ist, kommt die Nachricht über onMessage.
   messagingSdk.onMessage(messaging, async payload => {
     const notification = payload.notification || {};
     const data = payload.data || {};
@@ -122,15 +120,15 @@ async function initPush() {
 
   refreshUi();
 
+  // Bereits aktivierte Geräte bei jedem App-Start frisch registrieren.
+  // Firebase verwendet dafür den dedizierten /firebase-messaging-sw.js.
   if (localStorage.getItem("housePushEnabled") === "true" && Notification.permission === "granted") {
     const departure = localStorage.getItem("houseDepartureDate");
     if (departure) {
       try {
         await ensureAnonymousUser(auth, authSdk);
-        const swRegistration = await navigator.serviceWorker.ready;
         await messagingSdk.register(messaging, {
-          vapidKey: pushSettings.vapidKey,
-          serviceWorkerRegistration: swRegistration
+          vapidKey: pushSettings.vapidKey
         });
       } catch (error) {
         console.warn("Could not refresh push registration", error);
@@ -158,13 +156,11 @@ async function initPush() {
       setStatus("2/4 Anonyme Geräte-Anmeldung bei Firebase …", "info");
       await ensureAnonymousUser(auth, authSdk);
 
-      setStatus("3/4 Service Worker wird vorbereitet …", "info");
-      const swRegistration = await navigator.serviceWorker.ready;
+      setStatus("3/4 Firebase-Messaging-Service-Worker wird vorbereitet …", "info");
 
       setStatus("4/4 Gerät wird bei Firebase Cloud Messaging registriert …", "info");
       await messagingSdk.register(messaging, {
-        vapidKey: pushSettings.vapidKey,
-        serviceWorkerRegistration: swRegistration
+        vapidKey: pushSettings.vapidKey
       });
 
       setStatus("Gerät wurde bei FCM registriert. Registrierung wird gespeichert …", "info");
@@ -255,7 +251,7 @@ function describeError(error) {
     return `${code} – meltzow.github.io muss in Firebase Authentication als autorisierte Domain eingetragen werden.`;
   }
   if (code === "messaging/failed-service-worker-registration") {
-    return `${code} – der Service Worker konnte nicht für Push registriert werden.`;
+    return `${code} – der Firebase-Messaging-Service-Worker konnte nicht registriert werden.`;
   }
   if (code === "messaging/unsupported-browser") {
     return `${code} – dieser Browser unterstützt Firebase Web Push nicht.`;
