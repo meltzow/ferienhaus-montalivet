@@ -39,6 +39,16 @@ function openTopic(topic) {
   dialogTitle.textContent = `${topic.icon} ${topic.title}`;
   const freshness = topic.updatedAt ? `<div class="info-stand">Stand ${topic.updatedAt}</div>` : "";
   const callout = topic.callout ? `<div class="callout">${topic.callout}</div>` : "";
+  const troubleshooting = (topic.troubleshooting || []).map(issue => `
+    <details class="troubleshooting">
+      <summary>⚠️ ${issue.title}</summary>
+      <div class="troubleshooting__body">
+        ${issue.trigger ? `<p class="troubleshooting__trigger">${issue.trigger}</p>` : ""}
+        <ol class="troubleshooting__steps">${issue.steps.map(step => `<li>${step}</li>`).join("")}</ol>
+        ${issue.warning ? `<div class="troubleshooting__warning"><strong>Wichtig:</strong> ${issue.warning}</div>` : ""}
+      </div>
+    </details>
+  `).join("");
   const image = topic.sourceImage
     ? `<details><summary>Originalübersicht anzeigen</summary><img src="${topic.sourceImage}" alt="Originalseite aus dem Hausbuch" style="width:100%;margin-top:10px;border-radius:12px"></details>`
     : "";
@@ -49,6 +59,7 @@ function openTopic(topic) {
     ${freshness}
     ${callout}
     <ul class="dialog-list">${topic.items.map(x => `<li>${x}</li>`).join("")}</ul>
+    ${troubleshooting}
     ${source}
     ${image}
   `;

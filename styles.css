@@ -235,6 +235,34 @@ dialog::backdrop { background: rgba(16, 28, 25, .55); backdrop-filter: blur(2px)
   border-radius: 0 12px 12px 0;
   margin: 14px 0;
 }
+.troubleshooting {
+  margin-top: 18px;
+  border: 1px solid #e1b2aa;
+  border-radius: 14px;
+  background: #fff8f6;
+  overflow: hidden;
+}
+.troubleshooting summary {
+  padding: 14px 16px;
+  color: #7a3029;
+  font-weight: 800;
+  cursor: pointer;
+}
+.troubleshooting[open] summary { border-bottom: 1px solid #efd3ce; }
+.troubleshooting__body { padding: 2px 16px 16px; }
+.troubleshooting__trigger {
+  color: var(--muted);
+  font-weight: 650;
+}
+.troubleshooting__steps { padding-left: 22px; }
+.troubleshooting__steps li { margin: 10px 0; }
+.troubleshooting__warning {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--danger-soft);
+  color: #702a24;
+}
 footer {
   text-align: center;
   color: var(--muted);
