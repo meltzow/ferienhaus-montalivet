@@ -2,7 +2,10 @@ name: Ferienhaus Erinnerungen
 
 on:
   schedule:
-    - cron: "15 18 * * *"
+    # Mehrere Läufe als Retry-Fenster, weil GitHub geplante Jobs verzögern oder droppen kann.
+    - cron: "15,30,45 18 * * *"
+      timezone: "Europe/Paris"
+    - cron: "5 19 * * *"
       timezone: "Europe/Paris"
   workflow_dispatch:
     inputs:
@@ -14,6 +17,10 @@ on:
         options:
           - test
           - scheduled
+
+concurrency:
+  group: ferienhaus-reminders
+  cancel-in-progress: false
 
 jobs:
   send-reminders:
