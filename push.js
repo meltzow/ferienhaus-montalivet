@@ -26,7 +26,9 @@ async function initPush() {
     import(`${base}/firebase-messaging.js`)
   ]);
 
-  const app = appSdk.initializeApp(pushSettings.config);
+  const app = appSdk.getApps().length
+    ? appSdk.getApp()
+    : appSdk.initializeApp(pushSettings.config);
   const auth = authSdk.getAuth(app);
   const db = firestoreSdk.getFirestore(app);
   const messagingSupported = await messagingSdk.isSupported();
@@ -225,7 +227,7 @@ async function initPush() {
     if (messagingWorkerRegistration) return messagingWorkerRegistration;
 
     messagingWorkerRegistration = await navigator.serviceWorker.register(
-      "./firebase-messaging-sw.js?v=2.1",
+      "./firebase-messaging-sw.js?v=2.2",
       { scope: "./firebase-cloud-messaging-push-scope/" }
     );
 

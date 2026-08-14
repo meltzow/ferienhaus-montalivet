@@ -1,4 +1,8 @@
-const data = window.HOUSE_DATA;
+import { loadPublishedData } from "./content-client.js?v=2.2";
+
+const published = await loadPublishedData(window.HOUSE_DATA);
+const data = published.content;
+const wastePickups = published.wastePickups;
 document.getElementById("house-name").textContent = data.houseName;
 document.title = data.houseName;
 
@@ -24,10 +28,10 @@ function renderTopics() {
     const btn = document.createElement("button");
     btn.className = "topic-card";
     btn.innerHTML = `
-      <div class="topic-card__icon">${topic.icon}</div>
-      <h3>${topic.title}</h3>
-      <p>${topic.teaser}</p>
-      ${topic.updatedAt ? `<div class="topic-card__meta">Stand ${topic.updatedAt}</div>` : ""}
+      <div class="topic-card__icon">${escapeHtml(topic.icon)}</div>
+      <h3>${escapeHtml(topic.title)}</h3>
+      <p>${escapeHtml(topic.teaser)}</p>
+      ${topic.updatedAt ? `<div class="topic-card__meta">Stand ${escapeHtml(topic.updatedAt)}</div>` : ""}
     `;
     btn.addEventListener("click", () => openTopic(topic));
     topicGrid.appendChild(btn);
@@ -36,29 +40,31 @@ function renderTopics() {
 
 function openTopic(topic) {
   dialogEyebrow.textContent = topic.eyebrow || "";
-  dialogTitle.textContent = `${topic.icon} ${topic.title}`;
-  const freshness = topic.updatedAt ? `<div class="info-stand">Stand ${topic.updatedAt}</div>` : "";
-  const callout = topic.callout ? `<div class="callout">${topic.callout}</div>` : "";
+  dialogTitle.textContent = `${topic.icon || ""} ${topic.title || ""}`.trim();
+  const freshness = topic.updatedAt ? `<div class="info-stand">Stand ${escapeHtml(topic.updatedAt)}</div>` : "";
+  const callout = topic.callout ? `<div class="callout">${escapeHtml(topic.callout)}</div>` : "";
   const troubleshooting = (topic.troubleshooting || []).map(issue => `
     <details class="troubleshooting">
-      <summary>⚠️ ${issue.title}</summary>
+      <summary>⚠️ ${escapeHtml(issue.title)}</summary>
       <div class="troubleshooting__body">
-        ${issue.trigger ? `<p class="troubleshooting__trigger">${issue.trigger}</p>` : ""}
-        <ol class="troubleshooting__steps">${issue.steps.map(step => `<li>${step}</li>`).join("")}</ol>
-        ${issue.warning ? `<div class="troubleshooting__warning"><strong>Wichtig:</strong> ${issue.warning}</div>` : ""}
+        ${issue.trigger ? `<p class="troubleshooting__trigger">${escapeHtml(issue.trigger)}</p>` : ""}
+        <ol class="troubleshooting__steps">${(issue.steps || []).map(step => `<li>${escapeHtml(step)}</li>`).join("")}</ol>
+        ${issue.warning ? `<div class="troubleshooting__warning"><strong>Wichtig:</strong> ${escapeHtml(issue.warning)}</div>` : ""}
       </div>
     </details>
   `).join("");
-  const image = topic.sourceImage
-    ? `<details><summary>Originalübersicht anzeigen</summary><img src="${topic.sourceImage}" alt="Originalseite aus dem Hausbuch" style="width:100%;margin-top:10px;border-radius:12px"></details>`
+  const sourceImage = safeUrl(topic.sourceImage);
+  const image = sourceImage
+    ? `<details><summary>Originalübersicht anzeigen</summary><img src="${escapeHtml(sourceImage)}" alt="Originalseite aus dem Hausbuch" style="width:100%;margin-top:10px;border-radius:12px"></details>`
     : "";
-  const source = topic.sourceUrl
-    ? `<p class="small muted"><a href="${topic.sourceUrl}" target="_blank" rel="noopener">${topic.sourceLabel || "Offizielle Quelle öffnen"} ↗</a></p>`
+  const sourceUrl = safeUrl(topic.sourceUrl, true);
+  const source = sourceUrl
+    ? `<p class="small muted"><a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(topic.sourceLabel || "Offizielle Quelle öffnen")} ↗</a></p>`
     : "";
   dialogBody.innerHTML = `
     ${freshness}
     ${callout}
-    <ul class="dialog-list">${topic.items.map(x => `<li>${x}</li>`).join("")}</ul>
+    <ul class="dialog-list">${(topic.items || []).map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>
     ${troubleshooting}
     ${source}
     ${image}
@@ -108,25 +114,38 @@ function renderToday() {
   const month = now.getMonth() + 1;
   const year = now.getFullYear();
   const notes = [];
+  const todayIso = localDateString(now);
+  const tomorrowIso = localDateString(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
+  const todayOverride = wastePickups[todayIso];
+  const tomorrowOverride = wastePickups[tomorrowIso];
+
+  if (todayOverride?.enabled) {
+    notes.push(`🗑️ Heute: ${todayOverride.label}.`);
+  }
+  if (tomorrowOverride?.enabled) {
+    notes.push(`🗑️ Morgen: ${tomorrowOverride.label}. Bitte heute Abend rausstellen.`);
+  }
 
   // Müllplan 2026, offiziell geprüft bei Mairie Vendays-Montalivet / Smicotom.
   if (year === data.wasteScheduleYear) {
     const summerMontalivet = month === 7 || month === 8;
     const residualWasteThisWeek = summerMontalivet || (week % 2 === 1);
 
-    if (weekday === 2) {
+    if (weekday === 2 && !tomorrowOverride) {
       notes.push("🗑️ Morgen (Mittwoch): gelbe + grüne Tonne. Bitte heute Abend rausstellen.");
     }
-    if (weekday === 3) {
+    if (weekday === 3 && !todayOverride) {
       notes.push("🗑️ Heute (Mittwoch): Verpackungen/Papier + Bioabfall.");
+    }
+    if (weekday === 3 && !tomorrowOverride) {
       if (residualWasteThisWeek) {
         notes.push("🗑️ Morgen (Donnerstag): Restmüll. Bitte heute Abend die schwarze Tonne rausstellen.");
       }
     }
-    if (weekday === 4 && residualWasteThisWeek) {
+    if (weekday === 4 && residualWasteThisWeek && !todayOverride) {
       notes.push("🗑️ Heute (Donnerstag): Restmüll.");
     }
-  } else {
+  } else if (!todayOverride && !tomorrowOverride) {
     notes.push(`⚠️ Der hinterlegte Müllplan gilt für ${data.wasteScheduleYear}. Bitte den aktuellen Plan der Gemeinde prüfen.`);
   }
 
@@ -187,7 +206,7 @@ const contactHint = document.getElementById("contact-hint");
 
 function refreshContactState() {
   if (!data.ownerWhatsApp) {
-    contactHint.textContent = "Für die Veröffentlichung muss in house-data.js noch die WhatsApp-Nummer des Hauseigentümers eingetragen werden.";
+    contactHint.textContent = "Die WhatsApp-Nummer ist noch nicht in der Verwaltung hinterlegt.";
   } else {
     contactHint.textContent = "WhatsApp öffnet sich mit einer vorbereiteten Nachricht.";
   }
@@ -232,5 +251,35 @@ installBtn.addEventListener("click", async () => {
 });
 
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=2.1"));
+  const registerServiceWorker = () => navigator.serviceWorker.register("./sw.js?v=2.2");
+  if (document.readyState === "complete") registerServiceWorker();
+  else window.addEventListener("load", registerServiceWorker, { once: true });
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function safeUrl(value, httpOnly = false) {
+  if (!value) return "";
+  try {
+    const url = new URL(value, window.location.href);
+    if (httpOnly && !["http:", "https:"].includes(url.protocol)) return "";
+    if (!["http:", "https:"].includes(url.protocol)) return "";
+    return url.href;
+  } catch {
+    return "";
+  }
+}
+
+function localDateString(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }

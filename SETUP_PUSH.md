@@ -54,7 +54,7 @@ Der Firebase-CLI-Deploy über den Admin-SDK-Service-Account benötigt zusätzlic
 3. Den kompletten Inhalt aus `firestore.rules` im GitHub-Repository in den Editor kopieren.
 4. **Publish / Veröffentlichen** drücken.
 
-Die Datei `firestore.rules` bleibt die versionierte Referenz im Repository. Bei späteren Änderungen müssen Console und Repository synchron gehalten werden.
+Die Datei `firestore.rules` bleibt die versionierte Referenz im Repository. Bei späteren Änderungen müssen Console und Repository synchron gehalten werden. Die aktuelle Version enthält zusätzlich die Regeln für die in [`SETUP_ADMIN.md`](SETUP_ADMIN.md) beschriebene Verwaltung.
 
 ## Push auf der Webseite freischalten
 

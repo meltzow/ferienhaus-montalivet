@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#284f45">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Ferienhaus-Verwaltung</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css?v=2.2">
+</head>
+<body>
+  <header class="hero admin-hero">
+    <div class="hero__inner">
+      <div>
+        <div class="eyebrow">Geschützter Bereich</div>
+        <h1>Ferienhaus-Verwaltung</h1>
+        <p class="hero__copy">Inhalte bearbeiten und ohne GitHub-Konto veröffentlichen.</p>
+      </div>
+      <a class="ghost-btn admin-back-link" href="./">Zur Gäste-App</a>
+    </div>
+  </header>
+
+  <main class="page admin-page">
+    <section id="admin-loading" class="detail-card admin-loading" aria-live="polite">
+      <h2>Verwaltung wird geladen …</h2>
+    </section>
+
+    <section id="admin-login" class="detail-card admin-login" hidden>
+      <div class="eyebrow">Anmeldung</div>
+      <h2>Als Admin anmelden</h2>
+      <p class="muted">Verwende den eingerichteten Firebase-Admin-Zugang.</p>
+      <form id="login-form" class="admin-form">
+        <label for="admin-email">E-Mail-Adresse</label>
+        <input id="admin-email" type="email" autocomplete="username" required>
+        <label for="admin-password">Passwort</label>
+        <input id="admin-password" type="password" autocomplete="current-password" required>
+        <button class="primary-btn" type="submit">Anmelden</button>
+      </form>
+      <p id="login-status" class="small muted" aria-live="polite"></p>
+    </section>
+
+    <section id="admin-forbidden" class="detail-card" hidden>
+      <div class="eyebrow">Kein Zugriff</div>
+      <h2>Dieses Konto ist nicht als Admin freigeschaltet.</h2>
+      <p class="muted">Die Benutzer-ID muss einmalig in Firestore unter <code>admins</code> hinterlegt werden.</p>
+      <button id="forbidden-logout" class="secondary-btn" type="button">Abmelden</button>
+    </section>
+
+    <div id="admin-editor" hidden>
+      <section class="admin-toolbar detail-card">
+        <div>
+          <div class="eyebrow">Angemeldet</div>
+          <h2 id="admin-user">Admin</h2>
+          <p id="save-status" class="small muted" aria-live="polite">Noch keine Änderungen gespeichert.</p>
+        </div>
+        <div class="admin-toolbar__actions">
+          <a class="secondary-btn admin-link-btn" href="./" target="_blank" rel="noopener">Gäste-App öffnen</a>
+          <button id="logout-btn" class="text-btn" type="button">Abmelden</button>
+        </div>
+      </section>
+
+      <form id="content-form">
+        <section class="detail-card admin-section">
+          <div class="eyebrow">Allgemein</div>
+          <h2>Grunddaten</h2>
+          <div class="admin-field-grid">
+            <label>
+              <span>Name des Hauses</span>
+              <input id="content-house-name" type="text" required maxlength="100">
+            </label>
+            <label>
+              <span>WhatsApp-Nummer</span>
+              <input id="content-whatsapp" type="tel" inputmode="numeric" placeholder="491701234567" pattern="[0-9]*">
+              <small>Mit Ländervorwahl, ohne +, Leerzeichen oder führende 0.</small>
+            </label>
+          </div>
+        </section>
+
+        <section class="detail-card admin-section">
+          <div class="eyebrow">Schnellzugriff</div>
+          <h2>Hausinformationen</h2>
+          <p class="muted">Jede Zeile unter „Inhalte“ wird in der Gäste-App als eigener Listenpunkt angezeigt.</p>
+          <div id="topic-editor" class="admin-topic-list"></div>
+        </section>
+
+        <section class="detail-card admin-section">
+          <div class="eyebrow">Vor der Abfahrt</div>
+          <h2>Abreise-Checkliste</h2>
+          <label for="content-checklist">Ein Punkt pro Zeile</label>
+          <textarea id="content-checklist" rows="11" required></textarea>
+        </section>
+
+        <div class="admin-save-bar">
+          <button id="save-content" class="primary-btn" type="submit">Änderungen veröffentlichen</button>
+        </div>
+      </form>
+
+      <section class="detail-card admin-section">
+        <div class="eyebrow">Benachrichtigungen</div>
+        <h2>Mülltermin überschreiben</h2>
+        <p class="muted">Ein Eintrag ersetzt den eingebauten Müllplan nur für dieses Datum. Ein deaktivierter Eintrag unterdrückt die Erinnerung an diesem Tag.</p>
+        <form id="waste-form" class="admin-form">
+          <div class="admin-field-grid">
+            <label>
+              <span>Abholdatum</span>
+              <input id="waste-date" type="date" required>
+            </label>
+            <label>
+              <span>Bezeichnung</span>
+              <input id="waste-label" type="text" required maxlength="120" placeholder="Gelbe und grüne Tonne">
+            </label>
+          </div>
+          <label for="waste-message">Push-Text am Vorabend</label>
+          <textarea id="waste-message" rows="3" required maxlength="500" placeholder="Morgen früh: gelbe und grüne Tonne. Bitte heute Abend rausstellen."></textarea>
+          <label class="admin-checkbox">
+            <input id="waste-enabled" type="checkbox" checked>
+            <span>Erinnerung für dieses Datum aktiv</span>
+          </label>
+          <div class="admin-inline-actions">
+            <button class="primary-btn" type="submit">Termin speichern</button>
+            <button id="waste-reset" class="text-btn" type="button">Eingabe leeren</button>
+          </div>
+        </form>
+        <p id="waste-status" class="small muted" aria-live="polite"></p>
+        <div id="waste-list" class="admin-waste-list"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="firebase-config.js"></script>
+  <script src="house-data.js?v=2.2"></script>
+  <script type="module" src="admin.js?v=2.2"></script>
+</body>
+</html>

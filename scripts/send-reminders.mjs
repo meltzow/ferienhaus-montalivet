@@ -1,6 +1,7 @@
 import { cert, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
+import { buildWasteReminders } from "./reminder-logic.mjs";
 
 const TIME_ZONE = "Europe/Paris";
 const WASTE_SCHEDULE_YEAR = 2026;
@@ -33,6 +34,12 @@ const tomorrow = addDays(today, 1);
 const todayWeekday = weekday(today);
 const tomorrowYear = Number(tomorrow.slice(0, 4));
 const tomorrowMonth = Number(tomorrow.slice(5, 7));
+const wasteOverrideSnapshot = await db.collection("wastePickups").doc(tomorrow).get();
+const wasteOverride = wasteOverrideSnapshot.exists ? wasteOverrideSnapshot.data() : null;
+
+if (wasteOverride) {
+  console.log(`Manuelle Müllplan-Überschreibung für ${tomorrow} gefunden (${wasteOverride.enabled ? "aktiv" : "deaktiviert"}).`);
+}
 
 const snapshot = await db
   .collection("reminderRegistrations")
@@ -71,29 +78,14 @@ for (const doc of snapshot.docs) {
     continue;
   }
 
-  const reminders = [];
-
-  if (tomorrowYear === WASTE_SCHEDULE_YEAR) {
-    // Dienstagabend: gelbe + grüne Tonne für Mittwochmorgen.
-    if (todayWeekday === 2) {
-      reminders.push({
-        type: "waste-yellow-green",
-        text: "Morgen früh: gelbe und grüne Tonne. Bitte heute Abend rausstellen."
-      });
-    }
-
-    // Mittwochabend: schwarze Tonne für Donnerstagmorgen.
-    if (todayWeekday === 3) {
-      const summerMontalivet = tomorrowMonth === 7 || tomorrowMonth === 8;
-      const residualWasteWeek = summerMontalivet || isoWeek(tomorrow) % 2 === 1;
-      if (residualWasteWeek) {
-        reminders.push({
-          type: "waste-black",
-          text: "Morgen früh: Restmüll. Bitte heute Abend die schwarze Tonne rausstellen."
-        });
-      }
-    }
-  }
+  const reminders = buildWasteReminders({
+    wasteOverride,
+    tomorrow,
+    todayWeekday,
+    tomorrowYear,
+    tomorrowMonth,
+    wasteScheduleYear: WASTE_SCHEDULE_YEAR
+  });
 
   if (departureDate === tomorrow) {
     reminders.push({
@@ -112,11 +104,12 @@ for (const doc of snapshot.docs) {
 
   const hasDeparture = reminders.some(item => item.type === "departure");
   const hasWaste = reminders.some(item => item.type.startsWith("waste-"));
+  const wasteTitle = reminders.find(item => item.type.startsWith("waste-"))?.title;
   const title = hasDeparture && hasWaste
     ? "Morgen wichtig im Ferienhaus"
     : hasDeparture
       ? "Abreise morgen"
-      : "Müll morgen";
+      : wasteTitle || "Müll morgen";
 
   await sendNotification({
     doc,
@@ -187,13 +180,4 @@ function addDays(isoDate, amount) {
 
 function weekday(isoDate) {
   return new Date(`${isoDate}T12:00:00Z`).getUTCDay();
-}
-
-function isoWeek(isoDate) {
-  const date = new Date(`${isoDate}T12:00:00Z`);
-  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
