@@ -39,6 +39,7 @@ async function initPush() {
 
   const messaging = messagingSdk.getMessaging(app);
   let currentFid = null;
+  let messagingWorkerRegistration = null;
 
   // Wenn die PWA im Vordergrund geöffnet ist, kommt die Nachricht über onMessage.
   messagingSdk.onMessage(messaging, async payload => {
@@ -121,17 +122,21 @@ async function initPush() {
   refreshUi();
 
   // Bereits aktivierte Geräte bei jedem App-Start frisch registrieren.
-  // Firebase verwendet dafür den dedizierten /firebase-messaging-sw.js.
+  // Den Worker explizit übergeben: Die App liegt auf GitHub Pages in einem
+  // Unterverzeichnis, während Firebase sonst am Domain-Root suchen würde.
   if (localStorage.getItem("housePushEnabled") === "true" && Notification.permission === "granted") {
     const departure = localStorage.getItem("houseDepartureDate");
     if (departure) {
       try {
         await ensureAnonymousUser(auth, authSdk);
+        const serviceWorkerRegistration = await getMessagingWorkerRegistration();
         await messagingSdk.register(messaging, {
-          vapidKey: pushSettings.vapidKey
+          vapidKey: pushSettings.vapidKey,
+          serviceWorkerRegistration
         });
       } catch (error) {
         console.warn("Could not refresh push registration", error);
+        setStatus(`Erinnerungen konnten nicht aktualisiert werden: ${describeError(error)}`, "error");
       }
     }
   }
@@ -157,10 +162,12 @@ async function initPush() {
       await ensureAnonymousUser(auth, authSdk);
 
       setStatus("3/4 Firebase-Messaging-Service-Worker wird vorbereitet …", "info");
+      const serviceWorkerRegistration = await getMessagingWorkerRegistration();
 
       setStatus("4/4 Gerät wird bei Firebase Cloud Messaging registriert …", "info");
       await messagingSdk.register(messaging, {
-        vapidKey: pushSettings.vapidKey
+        vapidKey: pushSettings.vapidKey,
+        serviceWorkerRegistration
       });
 
       setStatus("Gerät wurde bei FCM registriert. Registrierung wird gespeichert …", "info");
@@ -213,6 +220,48 @@ async function initPush() {
       }
     }
   }
+
+  async function getMessagingWorkerRegistration() {
+    if (messagingWorkerRegistration) return messagingWorkerRegistration;
+
+    messagingWorkerRegistration = await navigator.serviceWorker.register(
+      "./firebase-messaging-sw.js?v=2.1",
+      { scope: "./firebase-cloud-messaging-push-scope/" }
+    );
+
+    await waitForActiveWorker(messagingWorkerRegistration);
+    return messagingWorkerRegistration;
+  }
+}
+
+function waitForActiveWorker(registration) {
+  if (registration.active) return Promise.resolve();
+
+  const worker = registration.installing || registration.waiting;
+  if (!worker) {
+    return Promise.reject(new Error("Der Firebase-Messaging-Service-Worker ist nicht aktiv."));
+  }
+
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error("Der Firebase-Messaging-Service-Worker wurde nicht rechtzeitig aktiv."));
+    }, 10000);
+
+    const handleStateChange = () => {
+      if (worker.state === "activated") {
+        clearTimeout(timeout);
+        worker.removeEventListener("statechange", handleStateChange);
+        resolve();
+      } else if (worker.state === "redundant") {
+        clearTimeout(timeout);
+        worker.removeEventListener("statechange", handleStateChange);
+        reject(new Error("Der Firebase-Messaging-Service-Worker konnte nicht aktiviert werden."));
+      }
+    };
+
+    worker.addEventListener("statechange", handleStateChange);
+    handleStateChange();
+  });
 }
 
 async function ensureAnonymousUser(auth, authSdk) {
@@ -238,7 +287,7 @@ async function saveRegistration({ user, installationId, db, firestoreSdk }) {
 }
 
 function describeError(error) {
-  const code = error?.code || "";
+  const code = String(error?.code || "");
   const message = String(error?.message || error || "Unbekannter Fehler")
     .replace(/^Firebase:\s*/i, "")
     .replace(/\s+/g, " ")

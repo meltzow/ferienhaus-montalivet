@@ -10,6 +10,11 @@ Die Erinnerungen laufen ohne Firebase Cloud Functions und ohne Blaze-Tarif.
 - **Firebase Cloud Messaging (FCM)** liefert Web-Push.
 - **GitHub Actions** ersetzt den kostenpflichtigen Scheduler und läuft täglich um 18:15 Uhr `Europe/Paris`.
 
+Da GitHub Pages die App unter `/ferienhaus-montalivet/` ausliefert, registriert
+`push.js` den dedizierten `firebase-messaging-sw.js` ausdrücklich in diesem
+Unterverzeichnis. Diese Zuordnung darf nicht entfernt werden: Ohne sie sucht FCM
+am Domain-Root nach dem Worker und Nachrichten erreichen die geschlossene PWA nicht.
+
 Geprüft werden:
 
 - Dienstagabend: gelbe + grüne Tonne für Mittwochmorgen

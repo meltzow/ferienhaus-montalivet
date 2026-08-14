@@ -1,13 +1,13 @@
-const CACHE = "ferienhaus-phase1-v2.0";
+const CACHE = "ferienhaus-phase1-v2.1";
 const ASSETS = [
   "./",
-  "./?v=2.0",
+  "./?v=2.1",
   "./index.html",
-  "./styles.css?v=2.0",
+  "./styles.css?v=2.1",
   "./firebase-config.js",
-  "./house-data.js?v=2.0",
-  "./app.js?v=2.0",
-  "./push.js?v=2.0",
+  "./house-data.js?v=2.1",
+  "./app.js?v=2.1",
+  "./push.js?v=2.1",
   "./manifest.webmanifest",
   "./icon.svg"
 ];
